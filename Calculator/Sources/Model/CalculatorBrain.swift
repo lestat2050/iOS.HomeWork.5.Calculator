@@ -11,22 +11,24 @@ import Foundation
 class CalculatorBrain {
 
     private let operations: [String: Operation] = [
+        "+/-": Operation.unaryOperation({ $0 * -1 }),
         "×": Operation.binaryOperation({ $0 * $1 }),
         "-": Operation.binaryOperation({ $0 - $1 }),
         "÷": Operation.binaryOperation({ $0 / $1 }),
         "+": Operation.binaryOperation({ $0 + $1 }),
+        "%": Operation.percent({ $0 / 100}),
         "=": Operation.equals,
         "C": Operation.clear
     ]
     
+    private var previousOperand = 0.0
     private var accumulator = 0.0
     private var pending: PendingBinaryOperationInfo?
-    
+
     private struct PendingBinaryOperationInfo {
         var binaryFunction: (Double, Double) -> Double
         var firstOperand: Double
     }
-    
     var result: Double {
         get {
             return accumulator;
@@ -34,7 +36,9 @@ class CalculatorBrain {
     }
     
     private enum Operation {
+        case unaryOperation((Double) -> Double)
         case binaryOperation((Double, Double) -> Double)
+        case percent((Double) -> Double)
         case equals
         case clear
     }
@@ -46,7 +50,12 @@ class CalculatorBrain {
     func performOperand(_ symbol: String) {
         if let operation = operations[symbol] {
             switch operation {
+            case .percent(let function):
+                accumulator = previousOperand * function(accumulator)
+            case .unaryOperation(let function):
+                accumulator = function(accumulator)
             case .binaryOperation(let function):
+                previousOperand = accumulator
                 executePendingBinaryOperation()
                 pending = PendingBinaryOperationInfo(binaryFunction: function,
                                                      firstOperand: accumulator)
@@ -67,6 +76,7 @@ class CalculatorBrain {
     }
     
     private func clear() {
+        previousOperand = 0
         accumulator = 0
         pending = nil
     }

@@ -11,11 +11,8 @@ import UIKit
 class CalculatorViewController: UIViewController {
     
     let decimalChar = "."
-    
     var stillTyping = false
-    
     var brain = CalculatorBrain()
-    
     var displayValue: Double {
         get {
             return Double(displayLabel.text!)!
@@ -70,10 +67,6 @@ class CalculatorViewController: UIViewController {
         }
         
         displayValue = brain.result
-    }
-    
-    @IBAction func onTouchChangeSign(_ sender: UIButton) {
-        displayValue = -displayValue
     }
     
 }
