@@ -10,40 +10,45 @@ import UIKit
 
 class CalculatorViewController: UIViewController {
     
+    //MARK: - Outlets
+    
+    @IBOutlet weak var displayLabel: UILabel!
+    
+    //MARK: - Properties
+    
     let decimalChar = "."
     var stillTyping = false
     var brain = CalculatorBrain()
     var displayValue: Double {
         get {
-            return Double(displayLabel.text!)!
+            return Double(displayLabel.text!.removeSeparator())!
         }
         set {
-            if newValue.isInfinite {
-                displayLabel.text = "NaN"
+            if newValue.isInfinite || newValue >= Double(Int.max)  {
+                displayLabel.text = "Error"
             } else if newValue == Double(Int(newValue)) {
-                displayLabel.text = String(Int(newValue))
+                displayLabel.text = CalculatorBrain.numberFormatter.string(for: Int(newValue))
             } else {
-                displayLabel.text = String(newValue)
+                displayLabel.text = CalculatorBrain.numberFormatter.string(for: newValue)
             }
         }
-    }
-    
-    @IBOutlet weak var displayLabel: UILabel!
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
     }
     
     //MARK: - Actions
     
     @IBAction func onTouchDigit(_ sender: UIButton) {
+        let textInDisplay = displayLabel.text!        
         let digit = sender.currentTitle!
         
+        if textInDisplay == "Error" {
+            return
+        }
+        
         if stillTyping {
-            let textInDisplay = displayLabel.text!
-            if digit != decimalChar ||
-                displayLabel.text!.range(of: decimalChar) == nil {
+            if digit == decimalChar, displayLabel.text!.range(of: decimalChar) == nil {
                 displayLabel.text = textInDisplay + digit
+            } else {
+                displayValue = Double(textInDisplay.removeSeparator() + digit)!
             }
         } else {
             if digit == decimalChar {
@@ -51,12 +56,17 @@ class CalculatorViewController: UIViewController {
             } else {
                 displayLabel.text = digit
             }
+            stillTyping = true
         }
-        
-        stillTyping = true
     }
     
     @IBAction func onTouchOperation(_ sender: UIButton) {
+        if displayLabel.text! == "Error" {
+            brain.performOperand("C")
+            displayValue = brain.result
+            return
+        }
+        
         if stillTyping {
             brain.setOperand(displayValue)
             stillTyping = false
@@ -68,6 +78,5 @@ class CalculatorViewController: UIViewController {
         
         displayValue = brain.result
     }
-    
 }
 

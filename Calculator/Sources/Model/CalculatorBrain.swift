@@ -34,6 +34,13 @@ class CalculatorBrain {
             return accumulator;
         }
     }
+    static var numberFormatter: NumberFormatter {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.maximumFractionDigits = 10
+        numberFormatter.minimumFractionDigits = 0
+        return numberFormatter
+    }
     
     private enum Operation {
         case unaryOperation((Double) -> Double)
@@ -79,6 +86,14 @@ class CalculatorBrain {
         previousOperand = 0
         accumulator = 0
         pending = nil
+    }
+    
+}
+
+extension String {
+    
+    func removeSeparator() -> String {
+        return self.replacingOccurrences(of: ",", with: "")
     }
     
 }
